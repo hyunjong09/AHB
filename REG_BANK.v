@@ -79,11 +79,11 @@ output reg CHANNEL_enable;
 output reg DMACINTR_mask;
 output reg DMACINTR_pend;
 output reg sync_grant;
-output reg dmac_buffer_idx;
+output reg [4:0] dmac_buffer_idx;
 output reg [31:0] DMAC_C0_SrcAddr_Master;
 output reg [31:0] DMAC_C0_DestAddr_Master;
-output reg src_burst_cnt;
-output reg dest_burst_cnt;
+output reg [4:0] src_burst_cnt;
+output reg [4:0] dest_burst_cnt;
 
 //sequencial logic(DMAC_HADDR_REG)
 always @(posedge r_HCLK or negedge r_HRESETn)

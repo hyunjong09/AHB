@@ -4,6 +4,7 @@ module DMAC_MASTER (
     m_HCLK,
     m_HRESETn,
     m_HREADY,
+	m_HRDATA,
     TS,
     BS,
     CHANNEL_enable,
@@ -15,7 +16,6 @@ module DMAC_MASTER (
     DMAC_C0_DestAddr_Master,
     src_burst_cnt,
     dest_burst_cnt,
-    m_HGRANT,
 
     // 출력 포트
     CHANNEL_dis_flag,
@@ -45,18 +45,18 @@ module DMAC_MASTER (
 input m_HCLK;
 input m_HRESETn;
 input m_HREADY;
-input m_HGRANT;
+input [31:0] m_HRDATA;
 input [11:0] TS;
 input [2:0] BS;
 input CHANNEL_enable;
 input DMACINTR_mask;
 input DMACINTR_pend;
 input sync_grant;
-input dmac_buffer_idx;
+input [4:0] dmac_buffer_idx;
 input [31:0] DMAC_C0_SrcAddr_Master;
 input [31:0] DMAC_C0_DestAddr_Master;
-input src_burst_cnt;
-input dest_burst_cnt;
+input [4:0] src_burst_cnt;
+input [4:0] dest_burst_cnt;
 
 // 출력 포트
 output reg CHANNEL_dis_flag;
@@ -83,8 +83,9 @@ output reg m_HBUSREQ;
 output reg DMACINTR;
 
 reg [2:0] mns, mps;
-reg [3:0] ahb_burst_size;
-reg [3:0] ahb_burst;
+integer ahb_burst_size;
+reg [2:0] ahb_burst;
+reg [15:0] [31:0]DMAC_buffer ;
 
 //master state parameter 설정
 parameter MA_IDLE_S =0;
@@ -93,6 +94,27 @@ parameter MA_READ_S = 2;
 parameter MA_RDATA_S = 3;
 parameter MA_WRITE_S = 4;
 parameter MA_WDATA_S = 5;
+
+//sequencial logic(dmac_buffer_idx
+always @(posedge m_HCLK)
+begin
+	if(mps==MA_RDATA_S) begin
+		DMAC_buffer[dmac_buffer_idx] <= m_HRDATA;
+	end
+	else begin
+		DMAC_buffer[dmac_buffer_idx] <= DMAC_buffer[dmac_buffer_idx];
+	end
+end
+
+always @(*)
+begin
+	if(mps==MA_WDATA_S) begin
+		m_HWDATA <= DMAC_buffer[dmac_buffer_idx];
+	end
+	else begin
+		m_HWDATA <= m_HWDATA;
+	end
+end
 
 //master fsm 시작
 always @(posedge m_HCLK or negedge m_HRESETn) 
