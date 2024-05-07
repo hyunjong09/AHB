@@ -70,6 +70,12 @@ output reg m_HBUSREQ;
 output reg DMACINTR;
 
 //wire 선언
+wire [31:0] out_HRDATA;
+wire [1:0] out_HRESP;
+wire out_HREADY;
+wire write_out_reg;
+wire load_ahb_addr;
+
 wire [31:0] DMAC_Configuration;
 wire [31:0] DMAC_C0_SrcAddr;
 wire [31:0] DMAC_C0_DestAddr;
@@ -115,9 +121,9 @@ DMAC_SLAVE slave_uut (	.s_HCLK(HCLK),
 						.s_HSIZE(HSIZE), 
 						.s_HBURST(HBURST), 
 						.DMAC_HADDR_REG(DMAC_HADDR_REG), 
-						.s_out_HRDATA(s_out_HRDATA), 
-						.s_out_HRESP(s_out_HRESP), 
-						.s_out_HREADY(s_out_HREADY), 
+						.s_out_HRDATA(out_HRDATA), 
+						.s_out_HRESP(out_HRESP), 
+						.s_out_HREADY(out_HREADY), 
 						.write_out_reg(write_out_reg), 
 						.load_ahb_addr(load_ahb_addr)	);
 					
@@ -201,4 +207,12 @@ DMAC_MASTER master_uut (	.m_HCLK(HCLK),
 							.m_HBUSREQ(m_HBUSREQ), 
 							.DMACINTR(DMACINTR)
 );
+
+always @(*)
+begin
+	s_out_HRDATA <= out_HRDATA;
+	s_out_HREADY <= out_HREADY;
+	s_out_HRESP <= out_HRESP;
+end
+
 endmodule
