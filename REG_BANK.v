@@ -10,6 +10,8 @@ module REG_BANK (
 
     CHANNEL_dis_flag,
     buffer_zero_flag,
+	buffer_idx_inc,
+
     load_DMAC_C0_Addr,
     TransferSize_dec_flag,
     src_burst_zero_flag,
@@ -54,6 +56,7 @@ input load_ahb_addr;
 //master에서 들어오는 input
 input CHANNEL_dis_flag;
 input buffer_zero_flag;
+input buffer_idx_inc;
 input load_DMAC_C0_Addr;
 input TransferSize_dec_flag;
 input src_burst_zero_flag;
@@ -62,6 +65,7 @@ input set_DMACINTR_status;
 input src_addr_inc;
 input dest_addr_inc;
 input m_HGRANT;
+input load_fir_src_img;
 
 
 output reg [11:0] DMAC_HADDR_REG;

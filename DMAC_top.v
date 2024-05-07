@@ -56,9 +56,9 @@ input HGRANT;
 input [11:0] DMAC_HADDR_REG;
 
 //slave output
-output reg [31:0] HRDATA_s_out;
-output reg [1:0] HRESP_s_out;
-output reg HREADY_s_out;
+output reg [31:0] s_out_HRDATA;
+output reg [1:0] s_out_HRESP;
+output reg s_out_HREADY;
 
 //master output
 output reg [1:0] m_HTRANS;
@@ -83,6 +83,7 @@ wire [11:0] DMAC_HADDR_REG;
 
 wire CHANNEL_dis_flag;
 wire buffer_zero_flag;
+wire buffer_idx_inc;
 wire load_DMAC_C0_Addr;
 wire TransferSize_dec_flag;
 wire src_burst_zero_flag;
@@ -90,6 +91,7 @@ wire dest_burst_zero_flag;
 wire set_DMACINTR_status;
 wire src_addr_inc;
 wire dest_addr_inc;
+wire load_fir_src_img;
 wire m_HGRANT;
 
 wire [11:0] TS;
@@ -108,20 +110,20 @@ wire dest_burst_cnt;
 
 //instance
 DMAC_SLAVE slave_uut (	.s_HCLK(HCLK), 
-					.s_HRESETn(HRESETn), 
-					.s_HTRANS(HTRANS), 
-					.s_HSEL(HSEL), 
-						
-					.s_HREADY(HREADY), 
-					.s_HWRITE(HWRITE), 
-					.s_HSIZE(HSIZE), 
-					.s_HBURST(HBURST), 
-					.DMAC_HADDR_REG(DMAC_HADDR_REG), 
-					.s_out_HRDATA(s_out_HRDATA), 
-					.s_out_HRESP(s_out_HRESP), 
-					.s_out_HREADY(s_out_HREADY), 
-					.write_out_reg(write_out_reg), 
-					.load_ahb_addr(load_ahb_addr)	);
+						.s_HRESETn(HRESETn), 
+						.s_HTRANS(HTRANS), 
+						.s_HSEL(HSEL), 
+							
+						.s_HREADY(HREADY), 
+						.s_HWRITE(HWRITE), 
+						.s_HSIZE(HSIZE), 
+						.s_HBURST(HBURST), 
+						.DMAC_HADDR_REG(DMAC_HADDR_REG), 
+						.s_out_HRDATA(s_out_HRDATA), 
+						.s_out_HRESP(s_out_HRESP), 
+						.s_out_HREADY(s_out_HREADY), 
+						.write_out_reg(write_out_reg), 
+						.load_ahb_addr(load_ahb_addr)	);
 					
 REG_BANK bank_uut (	.r_HCLK(HCLK),
 					.r_HRESETn(HRESETn),
@@ -133,6 +135,7 @@ REG_BANK bank_uut (	.r_HCLK(HCLK),
 
 					.CHANNEL_dis_flag(CHANNEL_dis_flag),
 					.buffer_zero_flag(buffer_zero_flag),
+					.buffer_idx_inc(buffer_idx_inc),
 					.load_DMAC_C0_Addr(load_DMAC_C0_Addr),
 					.TransferSize_dec_flag(TransferSize_dec_flag),
 					.src_burst_zero_flag(src_burst_zero_flag),
@@ -140,6 +143,7 @@ REG_BANK bank_uut (	.r_HCLK(HCLK),
 					.set_DMACINTR_status(set_DMACINTR_status),
 					.src_addr_inc(src_addr_inc),
 					.dest_addr_inc(dest_addr_inc),
+					.load_fir_src_img(load_fir_src_img),
 					.m_HGRANT(m_HGRANT),
 
 					.DMAC_HADDR_REG(DMAC_HADDR_REG),
@@ -164,7 +168,11 @@ REG_BANK bank_uut (	.r_HCLK(HCLK),
 					.dest_burst_cnt(dest_burst_cnt)
 );
 
-DMAC_MASTER master_uut (	.TS(TS),
+DMAC_MASTER master_uut (	.m_HCLK(HCLK),
+							.m_HRESTn(HRESETn),
+							.m_HREADY(HREADY),
+							.m_HGRANT(m_HGRANT),
+							.TS(TS),
 							.BS(BS),
 							.CHANNEL_enable(CHANNEL_enable),
 							.DMACINTR_mask(DMACINTR_mask),
@@ -179,6 +187,7 @@ DMAC_MASTER master_uut (	.TS(TS),
 
 							.CHANNEL_dis_flag(CHANNEL_dis_flag),
 							.buffer_zero_flag(buffer_zero_flag),
+							.buffer_idx_inc(buffer_idx_inc),
 							.load_DMAC_C0_Addr(load_DMAC_C0_Addr),
 							.TransferSize_dec_flag(TransferSize_dec_flag),
 							.src_burst_zero_flag(src_burst_zero_flag),
@@ -186,6 +195,16 @@ DMAC_MASTER master_uut (	.TS(TS),
 							.set_DMACINTR_status(set_DMACINTR_status),
 							.src_addr_inc(src_addr_inc),
 							.dest_addr_inc(dest_addr_inc),
-							.m_HGRANT(m_HGRANT)
+							.load_fir_src_img(load_fir_src_img),
+							.m_HTRANS(m_HTRANS),
+							.m_HBURST(m_HBURST),
+							.m_HSIZE(m_HSIZE),
+							.m_HADDR(m_HADDR),
+							.m_HWRITE(m_HWRITE), 
+							.m_HWDATA(m_HWDATA),
+							.m_HPROT(m_HPROT),
+							.m_HLOCK(m_HLOCK),
+							.m_HBUSREQ(m_HBUSREQ), 
+							.DMACINTR(DMACINTR)
 );
 endmodule

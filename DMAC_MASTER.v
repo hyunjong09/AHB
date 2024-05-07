@@ -1,37 +1,51 @@
 `include "ahb_macro_h.v"
 module DMAC_MASTER (
     // 입력 포트
-	input m_HCLK,
-	input m_HRESETn,
-    input [11:0] TS,
-    input [2:0] BS,
-    input CHANNEL_enable,
-    input DMACINTR_mask,
-    input DMACINTR_pend,
-    input sync_grant,
-    input dmac_buffer_idx,
-    input src_addr_inc,
-    input [31:0] DMAC_C0_SrcAddr_Master,
-    input [31:0] DMAC_C0_DestAddr_Master,
-    input src_burst_cnt,
-    input dest_burst_cnt,
+    m_HCLK,
+    m_HRESETn,
+    m_HREADY,
+    TS,
+    BS,
+    CHANNEL_enable,
+    DMACINTR_mask,
+    DMACINTR_pend,
+    sync_grant,
+    dmac_buffer_idx,
+    DMAC_C0_SrcAddr_Master,
+    DMAC_C0_DestAddr_Master,
+    src_burst_cnt,
+    dest_burst_cnt,
+    m_HGRANT,
 
     // 출력 포트
-    output reg CHANNEL_dis_flag,
-    output reg buffer_zero_flag,
-    output reg load_DMAC_C0_Addr,
-    output reg TransferSize_dec_flag,
-    output reg src_burst_zero_flag,
-    output reg dest_burst_zero_flag,
-    output reg set_DMACINTR_status,
-    output reg src_addr_inc,
-    output reg dest_addr_inc,
-    output reg m_HGRANT
+    CHANNEL_dis_flag,
+    buffer_zero_flag,
+	buffer_idx_inc,
+    load_DMAC_C0_Addr,
+    TransferSize_dec_flag,
+    src_burst_zero_flag,
+    dest_burst_zero_flag,
+    set_DMACINTR_status,
+    src_addr_inc,  
+    dest_addr_inc,
+	load_fir_src_img,
+    m_HTRANS,
+    m_HBURST,
+    m_HSIZE,
+    m_HADDR,
+    m_HWRITE,
+    m_HWDATA,
+    m_HPROT,
+    m_HLOCK,
+    m_HBUSREQ,
+    DMACINTR
 );
 
 // 입력 포트
 input m_HCLK;
 input m_HRESETn;
+input m_HREADY;
+input m_HGRANT;
 input [11:0] TS;
 input [2:0] BS;
 input CHANNEL_enable;
@@ -39,7 +53,6 @@ input DMACINTR_mask;
 input DMACINTR_pend;
 input sync_grant;
 input dmac_buffer_idx;
-input src_addr_inc;
 input [31:0] DMAC_C0_SrcAddr_Master;
 input [31:0] DMAC_C0_DestAddr_Master;
 input src_burst_cnt;
@@ -48,6 +61,7 @@ input dest_burst_cnt;
 // 출력 포트
 output reg CHANNEL_dis_flag;
 output reg buffer_zero_flag;
+output reg buffer_idx_inc;
 output reg load_DMAC_C0_Addr;
 output reg TransferSize_dec_flag;
 output reg src_burst_zero_flag;
@@ -55,9 +69,22 @@ output reg dest_burst_zero_flag;
 output reg set_DMACINTR_status;
 output reg src_addr_inc;
 output reg dest_addr_inc;
-output reg m_HGRANT;
+output reg load_fir_src_img;
+
+output reg [1:0] m_HTRANS;
+output reg [2:0] m_HBURST; 
+output reg [2:0] m_HSIZE;
+output reg [31:0] m_HADDR;
+output reg m_HWRITE; 
+output reg [31:0] m_HWDATA; 
+output reg [3:0] m_HPROT;
+output reg m_HLOCK; 
+output reg m_HBUSREQ; 
+output reg DMACINTR;
 
 reg [2:0] mns, mps;
+reg [3:0] ahb_burst_size;
+reg [3:0] ahb_burst;
 
 //master state parameter 설정
 parameter MA_IDLE_S =0;
@@ -79,34 +106,34 @@ always @(*)
 begin
 	case(mps)
 		MA_IDLE_S : begin
-			if((CHANNEL_enable ==1'b1) && (DMAC_Configuration[0] ==1'b1))
+			if(CHANNEL_enable ==1'b1)
 				mns <= MA_REQ_S;
 			else mns <= mps;
 		end
 		MA_REQ_S : begin
-			if(HREADY == 1'b1) mns <= MA_READ_S;
+			if(m_HREADY == 1'b1) mns <= MA_READ_S;
 			else mns <= mps;
 		end
 		MA_READ_S : begin
-			if((sync_grant == 1'b1) && (HREADY == 1'b1)) mns <= MA_RDATA_S;
+			if((sync_grant == 1'b1) && (m_HREADY == 1'b1)) mns <= MA_RDATA_S;
 			else mns <= mps;
 		end
 		MA_RDATA_S : begin
-			if((src_burst_cnt >= ahb_burst_size) && (sync_grant != 1'b1) && (HREADY == 1'b1)) mns <= MA_WRITE_S;
-			else if((src_burst_cnt >= ahb_burst_size) && (sync_grant == 1'b1) && (HREADY == 1'b1)) mns <= MA_WDATA_S;
-			else mns <= mps; //m_HREADY? 0??? src_burst_cnt < ahb_burst_size ?? ?? ?. ??? output ???? ??? ?? ? ?? ?.
+			if((src_burst_cnt >= ahb_burst_size) && (sync_grant != 1'b1) && (m_HREADY == 1'b1)) mns <= MA_WRITE_S;
+			else if((src_burst_cnt >= ahb_burst_size) && (sync_grant == 1'b1) && (m_HREADY == 1'b1)) mns <= MA_WDATA_S;
+			else mns <= mps; 
 		end
-      MA_WRITE_S : begin
-         if((sync_grant == 1'b1) && (HREADY == 1'b1)) mns <= MA_WDATA_S;
-         else mns <= mps;
-      end
-      MA_WDATA_S : begin
-         if((HREADY == 1'b1) && (TS!=0) &&(dest_burst_cnt >=ahb_burst_size)) mns <= MA_READ_S;
-         else if((HREADY == 1'b1) &&(TS == 0)) mns <= MA_REQ_S;
-         else mns <= mps;  //m_HREADY? 0 ??? dest_burst_cnt < ahb_burst_size ??? TramnsferSize? 0? ??.
-      end
-      default : mns <= MA_REQ_S; // default? REQ state? ??? ? ? mps ???? ? ??
-   endcase
+		MA_WRITE_S : begin
+			if((sync_grant == 1'b1) && (m_HREADY == 1'b1)) mns <= MA_WDATA_S;
+			else mns <= mps;
+		end
+		MA_WDATA_S : begin
+			if((m_HREADY == 1'b1) && (TS!=0) &&(dest_burst_cnt >=ahb_burst_size)) mns <= MA_READ_S;
+			else if((m_HREADY == 1'b1) &&(TS == 0)) mns <= MA_REQ_S;
+			else mns <= mps;  
+		end
+		default : mns <= MA_REQ_S; 
+	endcase
 end
 
 //FSM output block
@@ -290,18 +317,18 @@ begin
                src_burst_zero_flag <= 0;
                dest_burst_zero_flag <= 0;
                set_DMACINTR_status <= 1'b0;
-               if(HREADY == 1'b1) begin
+               if(m_HREADY == 1'b1) begin
                   src_addr_inc <= 1'b1;
                   load_fir_src_img <= 1'b1;
                   buffer_idx_inc <= 1'b1;
                end
-               else begin //src_burst_cnt < ahb_burst_size ?? ????? HREADY? 0? ??
+               else begin //src_burst_cnt < ahb_burst_size ?? ????? m_HREADY? 0? ??
                   src_addr_inc <= 1'b0;
                   load_fir_src_img <= 1'b0;
                   buffer_idx_inc <= 1'b0;
                end
             end 
-            else begin  //src_burst_cnt < ahb_burst_size ?? ??? ???? HREADY? 0? ?? ??
+            else begin  //src_burst_cnt < ahb_burst_size ?? ??? ???? m_HREADY? 0? ?? ??
                dest_addr_inc <= 0;
                m_HBUSREQ <= 1'b1;
                m_HLOCK <= 1'b0;
@@ -431,7 +458,7 @@ begin
             dest_burst_zero_flag <= 0;   
             load_fir_src_img <= 1'b0;
             set_DMACINTR_status <= 1'b0;
-            if(HREADY == 1) begin
+            if(m_HREADY == 1) begin
                dest_addr_inc <= 1'b1;
                buffer_idx_inc <= 1'b1;
                TransferSize_dec_flag <= 1'b1;
@@ -472,3 +499,5 @@ begin
       end
    endcase
 end
+
+endmodule
