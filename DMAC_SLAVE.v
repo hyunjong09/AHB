@@ -10,7 +10,14 @@ module DAMC_SLAVE (
     s_HSIZE,
     s_HBURST,
     DMAC_HADDR_REG,
-
+   DMAC_Configuration,
+   DMAC_C0_SrcAddr,
+   DMAC_C0_DestAddr,
+   DMAC_C0_Control,
+   DMAC_C0_Configuration,
+   DMACINTR_pend,
+   DMACINTR_mask,
+   
     // Outputs
     s_out_HRDATA,
     s_out_HRESP,
@@ -38,6 +45,8 @@ input [31:0] DMAC_C0_SrcAddr;
 input [31:0] DMAC_C0_DestAddr;
 input [31:0] DMAC_C0_Control;
 input [31:0] DMAC_C0_Configuration;
+input DMACINTR_pend;
+input DMACINTR_mask;
 
 //slave에서 버스로 나가는 output
 output reg [31:0] s_out_HRDATA;
@@ -65,154 +74,154 @@ parameter SDMAC_ERROR_S = 3;
 //slave fsm
 always @(posedge s_HCLK or negedge s_HRESETn)
 begin
-	if(!s_HRESETn) sps <= SDMAC_ADDR_S; 
-	else sps <= sns;
+   if(!s_HRESETn) sps <= SDMAC_ADDR_S; 
+   else sps <= sns;
    
 end
 
 always @(*) // state block
 begin
-	case(sps)
-		SDMAC_ADDR_S : begin
-			if(s_HREADY == 0) // ??: s_HREADY? 0?? ?? ?? ??
-				sns <= SDMAC_ADDR_S;
-			else if(s_HREADY == 1 && s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 0) 
-				sns <= SDMAC_READ_S;
-			else if(s_HREADY == 1 && s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 1) 
-				sns <= SDMAC_WRITE_S;
-			else 
-				sns <= SDMAC_ADDR_S;
-		end
-		SDMAC_WRITE_S : begin
-			if(s_HREADY == 0) // ??: s_HREADY? 0?? ?? ?? ??
-				sns <= SDMAC_WRITE_S;
-			else if(s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 1) 
-				sns <= SDMAC_WRITE_S;
-			else if(s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 0) begin
-				sns <= SDMAC_READ_S;
-			end
-			else sns <= SDMAC_ADDR_S;
-			if(!((DMAC_HADDR_REG == 12'h030)||
-				(DMAC_HADDR_REG == 12'h100)||
-				(DMAC_HADDR_REG == 12'h104)||
-				(DMAC_HADDR_REG == 12'h10C)||
-				(DMAC_HADDR_REG == 12'h110))) begin
-					sns <= SDMAC_ERROR_S;
-			end
-		end
-		SDMAC_READ_S : begin
-			if(s_HREADY == 0) // ??: s_HREADY? 0?? ?? ?? ??
-				sns <= SDMAC_READ_S;
-			else if(s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 0) sns <= SDMAC_READ_S;
-			else if(s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 1) sns <= SDMAC_WRITE_S;
-			else sns <= SDMAC_ADDR_S;
-		end
-		SDMAC_ERROR_S : begin
-			if(s_HREADY == 0) // ??: s_HREADY? 0?? ?? ?? ??
-				sns <= SDMAC_ERROR_S;
-			else
-				sns <= SDMAC_ADDR_S;
-		end
-		default : sns <= SDMAC_ADDR_S;
-	endcase
+   case(sps)
+      SDMAC_ADDR_S : begin
+         if(s_HREADY == 0) // ??: s_HREADY? 0?? ?? ?? ??
+            sns <= SDMAC_ADDR_S;
+         else if(s_HREADY == 1 && s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 0) 
+            sns <= SDMAC_READ_S;
+         else if(s_HREADY == 1 && s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 1) 
+            sns <= SDMAC_WRITE_S;
+         else 
+            sns <= SDMAC_ADDR_S;
+      end
+      SDMAC_WRITE_S : begin
+         if(s_HREADY == 0) // ??: s_HREADY? 0?? ?? ?? ??
+            sns <= SDMAC_WRITE_S;
+         else if(s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 1) 
+            sns <= SDMAC_WRITE_S;
+         else if(s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 0) begin
+            sns <= SDMAC_READ_S;
+         end
+         else sns <= SDMAC_ADDR_S;
+         if(!((DMAC_HADDR_REG == 12'h030)||
+            (DMAC_HADDR_REG == 12'h100)||
+            (DMAC_HADDR_REG == 12'h104)||
+            (DMAC_HADDR_REG == 12'h10C)||
+            (DMAC_HADDR_REG == 12'h110))) begin
+               sns <= SDMAC_ERROR_S;
+         end
+      end
+      SDMAC_READ_S : begin
+         if(s_HREADY == 0) // ??: s_HREADY? 0?? ?? ?? ??
+            sns <= SDMAC_READ_S;
+         else if(s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 0) sns <= SDMAC_READ_S;
+         else if(s_HSEL == 1 && s_HTRANS[1] == 1 && s_HWRITE == 1) sns <= SDMAC_WRITE_S;
+         else sns <= SDMAC_ADDR_S;
+      end
+      SDMAC_ERROR_S : begin
+         if(s_HREADY == 0) // ??: s_HREADY? 0?? ?? ?? ??
+            sns <= SDMAC_ERROR_S;
+         else
+            sns <= SDMAC_ADDR_S;
+      end
+      default : sns <= SDMAC_ADDR_S;
+   endcase
 end
 
 
 always @(*) //output block
 begin  
-	case(sps)
-		SDMAC_ADDR_S : begin
-			if(sns!=SDMAC_ADDR_S) begin //?? ????? READ?? WRITE ??
-				s_out_HRESP <= `OKAY;
-				s_out_HREADY <= 1'b1;
-				s_out_HRDATA <= 32'b0; 
-				load_ahb_addr <= 1'b1; //DMAC_HADDR_REG = HADDR[6:5]
-				write_out_reg <= 1'b0;
-			end
-			else begin //?? ????? ADDR ??
-				if(s_HREADY ==1'b1) begin
-					s_out_HRESP <= `OKAY;
-					s_out_HREADY <= 1'b1;
-					s_out_HRDATA <= 32'b0; 
-					load_ahb_addr <= 1'b0;
-					write_out_reg <= 1'b0;
-				end
-				else begin
-					s_out_HRESP <= `OKAY;
-					s_out_HREADY <= 1'b0;
-					s_out_HRDATA <= 32'b0; 
-					load_ahb_addr <= 1'b0;
-					write_out_reg <= 1'b0;
-				end
-			end
-		end
-		SDMAC_WRITE_S : begin
-			if(sns==SDMAC_ADDR_S) begin
-				s_out_HRESP <= `OKAY;
-				s_out_HREADY <= 1'b1;
-				s_out_HRDATA <= 32'b0; 
-				load_ahb_addr <= 1'b0;	
-				if((DMAC_HADDR_REG == 12'h030)||
-					(DMAC_HADDR_REG == 12'h100)||
-					(DMAC_HADDR_REG == 12'h104)||
-					(DMAC_HADDR_REG == 12'h10C)||
-					(DMAC_HADDR_REG == 12'h110)) begin
-						write_out_reg<= 1'b1;
-				end 
-				else begin
-					write_out_reg <=1'b0;
-				end
-			end
-			else if(sns ==SDMAC_ERROR_S) begin
-				s_out_HRESP <= `ERROR;
-				s_out_HREADY <= 1'b0;
-				s_out_HRDATA <= 32'b0;
-				load_ahb_addr <= 1'b0;
-				write_out_reg <= 1'b0;
-			end
-			else if(sns ==SDMAC_READ_S) begin
-				s_out_HRESP <= `OKAY;
-				s_out_HREADY <= 1'b1;
-				s_out_HRDATA <= 32'b0; 
-				load_ahb_addr <= 1'b1;
-				if((DMAC_HADDR_REG == 12'h030)||
-					(DMAC_HADDR_REG == 12'h100)||
-					(DMAC_HADDR_REG == 12'h104)||
-					(DMAC_HADDR_REG == 12'h10C)||
-					(DMAC_HADDR_REG == 12'h110)) begin
-						write_out_reg<= 1'b1;
-				end 
-				else begin
-					write_out_reg <=1'b0;
-				end
-			end
-			else begin
-				if(s_HREADY) begin
-					s_out_HRESP <= `OKAY;
-					s_out_HREADY <= 1'b1;
-					s_out_HRDATA <= 32'b0; 
-					load_ahb_addr <= 1'b1;
-					if((DMAC_HADDR_REG == 12'h030)||
-						(DMAC_HADDR_REG == 12'h100)||
-						(DMAC_HADDR_REG == 12'h104)||
-						(DMAC_HADDR_REG == 12'h10C)||
-						(DMAC_HADDR_REG == 12'h110)) begin
-							write_out_reg<= 1'b1;
-					end 
-					else begin
-						write_out_reg <=1'b0;
-					end
-				end
-				else begin
-					s_out_HRESP <= `OKAY;
-					s_out_HREADY <= 1'b0;
-					s_out_HRDATA <= 32'b0; 
-					load_ahb_addr <= 1'b0;
-					write_out_reg <=1'b0;
-				end
-			end
-		end
-		SDMAC_READ_S : begin
+   case(sps)
+      SDMAC_ADDR_S : begin
+         if(sns!=SDMAC_ADDR_S) begin //?? ????? READ?? WRITE ??
+            s_out_HRESP <= `OKAY;
+            s_out_HREADY <= 1'b1;
+            s_out_HRDATA <= 32'b0; 
+            load_ahb_addr <= 1'b1; //DMAC_HADDR_REG = HADDR[6:5]
+            write_out_reg <= 1'b0;
+         end
+         else begin //?? ????? ADDR ??
+            if(s_HREADY ==1'b1) begin
+               s_out_HRESP <= `OKAY;
+               s_out_HREADY <= 1'b1;
+               s_out_HRDATA <= 32'b0; 
+               load_ahb_addr <= 1'b0;
+               write_out_reg <= 1'b0;
+            end
+            else begin
+               s_out_HRESP <= `OKAY;
+               s_out_HREADY <= 1'b0;
+               s_out_HRDATA <= 32'b0; 
+               load_ahb_addr <= 1'b0;
+               write_out_reg <= 1'b0;
+            end
+         end
+      end
+      SDMAC_WRITE_S : begin
+         if(sns==SDMAC_ADDR_S) begin
+            s_out_HRESP <= `OKAY;
+            s_out_HREADY <= 1'b1;
+            s_out_HRDATA <= 32'b0; 
+            load_ahb_addr <= 1'b0;   
+            if((DMAC_HADDR_REG == 12'h030)||
+               (DMAC_HADDR_REG == 12'h100)||
+               (DMAC_HADDR_REG == 12'h104)||
+               (DMAC_HADDR_REG == 12'h10C)||
+               (DMAC_HADDR_REG == 12'h110)) begin
+                  write_out_reg<= 1'b1;
+            end 
+            else begin
+               write_out_reg <=1'b0;
+            end
+         end
+         else if(sns ==SDMAC_ERROR_S) begin
+            s_out_HRESP <= `ERROR;
+            s_out_HREADY <= 1'b0;
+            s_out_HRDATA <= 32'b0;
+            load_ahb_addr <= 1'b0;
+            write_out_reg <= 1'b0;
+         end
+         else if(sns ==SDMAC_READ_S) begin
+            s_out_HRESP <= `OKAY;
+            s_out_HREADY <= 1'b1;
+            s_out_HRDATA <= 32'b0; 
+            load_ahb_addr <= 1'b1;
+            if((DMAC_HADDR_REG == 12'h030)||
+               (DMAC_HADDR_REG == 12'h100)||
+               (DMAC_HADDR_REG == 12'h104)||
+               (DMAC_HADDR_REG == 12'h10C)||
+               (DMAC_HADDR_REG == 12'h110)) begin
+                  write_out_reg<= 1'b1;
+            end 
+            else begin
+               write_out_reg <=1'b0;
+            end
+         end
+         else begin
+            if(s_HREADY) begin
+               s_out_HRESP <= `OKAY;
+               s_out_HREADY <= 1'b1;
+               s_out_HRDATA <= 32'b0; 
+               load_ahb_addr <= 1'b1;
+               if((DMAC_HADDR_REG == 12'h030)||
+                  (DMAC_HADDR_REG == 12'h100)||
+                  (DMAC_HADDR_REG == 12'h104)||
+                  (DMAC_HADDR_REG == 12'h10C)||
+                  (DMAC_HADDR_REG == 12'h110)) begin
+                     write_out_reg<= 1'b1;
+               end 
+               else begin
+                  write_out_reg <=1'b0;
+               end
+            end
+            else begin
+               s_out_HRESP <= `OKAY;
+               s_out_HREADY <= 1'b0;
+               s_out_HRDATA <= 32'b0; 
+               load_ahb_addr <= 1'b0;
+               write_out_reg <=1'b0;
+            end
+         end
+      end
+      SDMAC_READ_S : begin
          if(sns == SDMAC_ADDR_S) begin //read -> addr
             s_out_HRESP <= `OKAY;
             s_out_HREADY <= 1'b1;
@@ -283,4 +292,4 @@ begin
    endcase
 end
 
-
+endmodule

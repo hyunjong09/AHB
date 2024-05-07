@@ -11,7 +11,6 @@ module REG_BANK (
     CHANNEL_dis_flag,
     buffer_zero_flag,
 	buffer_idx_inc,
-
     load_DMAC_C0_Addr,
     TransferSize_dec_flag,
     src_burst_zero_flag,
@@ -20,8 +19,7 @@ module REG_BANK (
     src_addr_inc,
     dest_addr_inc,
     m_HGRANT,
-
-    DMAC_HADDR_REG,
+	load_fir_src_img,
 
     DMAC_Configuration,
     DMAC_C0_SrcAddr,
@@ -36,11 +34,11 @@ module REG_BANK (
     DMACINTR_pend,
     sync_grant,
     dmac_buffer_idx,
-    src_addr_inc,
     DMAC_C0_SrcAddr_Master,
     DMAC_C0_DestAddr_Master,
     src_burst_cnt,
-    dest_burst_cnt
+    dest_burst_cnt,
+	DMAC_HADDR_REG
 );
 
 //top 모듈에서 instance되는 input (tb에서 들어오는 거)
@@ -67,7 +65,6 @@ input dest_addr_inc;
 input m_HGRANT;
 input load_fir_src_img;
 
-
 output reg [11:0] DMAC_HADDR_REG;
 
 output reg [31:0] DMAC_Configuration;
@@ -83,16 +80,15 @@ output reg DMACINTR_mask;
 output reg DMACINTR_pend;
 output reg sync_grant;
 output reg dmac_buffer_idx;
-output reg src_addr_inc;
 output reg [31:0] DMAC_C0_SrcAddr_Master;
 output reg [31:0] DMAC_C0_DestAddr_Master;
 output reg src_burst_cnt;
 output reg dest_burst_cnt;
 
 //sequencial logic(DMAC_HADDR_REG)
-always @(posedge r_HCLK or negedge HRESETn)
+always @(posedge r_HCLK or negedge r_HRESETn)
 begin
-   if(!HRESETn) begin
+   if(!r_HRESETn) begin
       DMAC_HADDR_REG <= 0;
    end
     else begin
@@ -163,7 +159,7 @@ end
 
 always @(posedge r_HCLK or negedge r_HRESETn)
 begin
-	if(!HRESETn) begin
+	if(!r_HRESETn) begin
 		TS <= 0;
 	end
     else begin
@@ -176,9 +172,9 @@ begin
 	end
 end
 
-always @(posedge r_HCLK or negedge HRESETn)
+always @(posedge r_HCLK or negedge r_HRESETn)
 begin
-   if(!HRESETn) begin
+   if(!r_HRESETn) begin
       DMACINTR_pend <= 1'b1;
    end
     else begin
@@ -192,9 +188,9 @@ begin
 end
 
 //sequencial logic(sync_grant)
-always @(posedge r_HCLK or negedge HRESETn)
+always @(posedge r_HCLK or negedge r_HRESETn)
 begin
-	if(!HRESETn) begin
+	if(!r_HRESETn) begin
 		sync_grant <= 1'b0;
 	end
     else begin
@@ -208,9 +204,9 @@ begin
 end
 
 //sequencial logic(dmac_buffer_idx)
-always @(posedge r_HCLK or negedge HRESETn)
+always @(posedge r_HCLK or negedge r_HRESETn)
 begin
-	if(!HRESETn) begin
+	if(!r_HRESETn) begin
 		dmac_buffer_idx <= 1'b0;
 	end
 	else begin
@@ -229,9 +225,9 @@ begin
 end
 
 //sequencial logic(load_master_addr)
-always @(posedge r_HCLK or negedge HRESETn)
+always @(posedge r_HCLK or negedge r_HRESETn)
 begin
-	if(!HRESETn) begin
+	if(!r_HRESETn) begin
 		DMAC_C0_DestAddr_Master <= 32'b0;
 		DMAC_C0_SrcAddr_Master <= 32'b0;
 	end
@@ -244,9 +240,9 @@ begin
 end
 
 //sequencial logic(src)
-always @(posedge r_HCLK or negedge HRESETn)
+always @(posedge r_HCLK or negedge r_HRESETn)
 begin
-	if(!HRESETn) begin
+	if(!r_HRESETn) begin
 		src_burst_cnt <= 1'b0;
 	end
 	else begin
@@ -267,9 +263,9 @@ begin
 end
 
 //sequencial logic(dest)
-always @(posedge r_HCLK or negedge HRESETn)
+always @(posedge r_HCLK or negedge r_HRESETn)
 begin
-	if(!HRESETn) begin
+	if(!r_HRESETn) begin
 		dest_burst_cnt <= 1'b0;
 	end
 	else begin
@@ -288,3 +284,5 @@ begin
 		end
 	end
 end
+
+endmodule

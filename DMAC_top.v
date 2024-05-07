@@ -52,9 +52,6 @@ input [1:0] HRESP;
 input [31:0] HRDATA;
 input HGRANT;
 
-//register bank input
-input [11:0] DMAC_HADDR_REG;
-
 //slave output
 output reg [31:0] s_out_HRDATA;
 output reg [1:0] s_out_HRESP;
@@ -101,7 +98,6 @@ wire DMACINTR_mask;
 wire DMACINTR_pend;
 wire sync_grant;
 wire dmac_buffer_idx;
-wire src_addr_inc;
 wire [31:0] DMAC_C0_SrcAddr_Master;
 wire [31:0] DMAC_C0_DestAddr_Master;
 wire src_burst_cnt;
@@ -161,7 +157,6 @@ REG_BANK bank_uut (	.r_HCLK(HCLK),
 					.DMACINTR_pend(DMACINTR_pend),
 					.sync_grant(sync_grant),
 					.dmac_buffer_idx(dmac_buffer_idx),
-					.src_addr_inc(src_addr_inc),
 					.DMAC_C0_SrcAddr_Master(DMAC_C0_SrcAddr_Master),
 					.DMAC_C0_DestAddr_Master(DMAC_C0_DestAddr_Master),
 					.src_burst_cnt(src_burst_cnt),
@@ -179,7 +174,6 @@ DMAC_MASTER master_uut (	.m_HCLK(HCLK),
 							.DMACINTR_pend(DMACINTR_pend),
 							.sync_grant(sync_grant),
 							.dmac_buffer_idx(dmac_buffer_idx),
-							.src_addr_inc(src_addr_inc),
 							.DMAC_C0_SrcAddr_Master(DMAC_C0_SrcAddr_Master),
 							.DMAC_C0_DestAddr_Master(DMAC_C0_DestAddr_Master),
 							.src_burst_cnt(src_burst_cnt),
