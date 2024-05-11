@@ -2,14 +2,17 @@
 `include "amba_h.v"
 module ahb_test(HCLK, HRESETn, 
       //inputs from masters   
-      m0_HTRANS, m0_HBURST, m0_HSIZE, m0_HPROT, m0_HADDR, m0_HWRITE, m0_HWDATA,      //Master_0    //Master_1
+      m0_HTRANS, m0_HBURST, m0_HSIZE, m0_HPROT, m0_HADDR, m0_HWRITE, m0_HWDATA,      //Master_0(default)
 	  
       m0_HBUSREQ, m2_HBUSREQ,
+	  
       //outputs to masters
       HREADY, HRESP, HRDATA,
+	  
       //outputs to slaves
       HSEL, HTRANS, HBURST, HSIZE, HADDR, HWRITE, HWDATA, HSPLIT
       );
+	  
    //parameters specified by user for AHB
    //the number of masters, which can be up to 16
    parameter N_MASTER=3;
@@ -45,6 +48,7 @@ module ahb_test(HCLK, HRESETn,
    input [W_DATA-1:0]   m0_HWDATA;
    input m0_HBUSREQ;
    input m2_HBUSREQ;
+   
    wire m1_HBUSREQ;
    wire [2:0] HBUSREQ;
    wire [2:0] HGRANT;
@@ -67,22 +71,23 @@ module ahb_test(HCLK, HRESETn,
    wire [W_DATA-1:0]   m2_HWDATA;
    
    //inputs from slaves
+   //slave 0
    wire                s0_HREADY;
    wire [`W_RESP-1:0]  s0_HRESP;
    wire [W_DATA-1:0]   s0_HRDATA;
    wire [N_MASTER-1:0] s0_HSPLIT;
-   //slave 6
+   //slave 1
    wire                s1_HREADY;
    wire [`W_RESP-1:0]  s1_HRESP;
    wire [W_DATA-1:0]   s1_HRDATA;
    wire [N_MASTER-1:0] s1_HSPLIT;
-   //slave 7
+   //slave 2
    wire                s2_HREADY;
    wire [`W_RESP-1:0]  s2_HRESP;
    wire [W_DATA-1:0]   s2_HRDATA;
    wire [N_MASTER-1:0] s2_HSPLIT;
    
-   //slave 7
+   //slave 3
    wire                s3_HREADY;
    wire [`W_RESP-1:0]  s3_HRESP;
    wire [W_DATA-1:0]   s3_HRDATA;
@@ -93,12 +98,14 @@ module ahb_test(HCLK, HRESETn,
    wire [`W_RESP-1:0]  s4_HRESP;
    wire [W_DATA-1:0]   s4_HRDATA;
    wire [N_MASTER-1:0] s4_HSPLIT;
-   //slave 6
+   
+   //slave 5
    wire                s5_HREADY;
    wire [`W_RESP-1:0]  s5_HRESP;
    wire [W_DATA-1:0]   s5_HRDATA;
    wire [N_MASTER-1:0] s5_HSPLIT;
-   //slave 7
+   
+   //slave 6
    wire                s6_HREADY;
    wire [`W_RESP-1:0]  s6_HRESP;
    wire [W_DATA-1:0]   s6_HRDATA;
@@ -163,7 +170,7 @@ SRAM sram_instance (
     .s5_HRDATA(s5_HRDATA)
 );
 
-DMAC dmac_instance (
+DMAC_top dmac_instance (
     .HCLK(HCLK), 
     .HRESETn(HRESETn), 
     .HREADY(HREADY),
