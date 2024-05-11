@@ -22,7 +22,7 @@ output reg [31:0] s5_HRDATA;
 output reg s5_HREADY;
 output reg [1:0] s5_HRESP;
 
-parameter MEM_DEPTH = 32'h3000;
+parameter MEM_DEPTH = 32'd4096;
 parameter MEM_WIDTH = 32;
  
 reg [MEM_WIDTH-1:0] memory [0:MEM_DEPTH-1];
