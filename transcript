@@ -1,0 +1,76 @@
+# Compile of REG_BANK.v was successful.
+# Compile of DMAC_MASTER.v was successful.
+# Compile of DMAC_SLAVE.v was successful.
+# Compile of DMAC_top.v failed with 1 errors.
+# Compile of dmac_tb.v was successful.
+# Compile of amba_h.v was successful.
+# 6 compiles, 1 failed with 1 error.
+# Compile of REG_BANK.v was successful.
+# Compile of DMAC_MASTER.v was successful.
+# Compile of DMAC_SLAVE.v was successful.
+# Compile of DMAC_top.v failed with 1 errors.
+# Compile of dmac_tb.v was successful.
+# Compile of amba_h.v was successful.
+# 6 compiles, 1 failed with 1 error.
+# Compile of REG_BANK.v was successful.
+# Compile of DMAC_MASTER.v was successful.
+# Compile of DMAC_SLAVE.v was successful.
+# Compile of DMAC_top.v failed with 3 errors.
+# Compile of dmac_tb.v was successful.
+# Compile of amba_h.v was successful.
+# 6 compiles, 1 failed with 3 errors.
+# Compile of REG_BANK.v was successful.
+# Compile of DMAC_MASTER.v was successful.
+# Compile of DMAC_SLAVE.v was successful.
+# Compile of DMAC_top.v failed with 3 errors.
+# Compile of dmac_tb.v was successful.
+# Compile of amba_h.v was successful.
+# 6 compiles, 1 failed with 3 errors.
+# Compile of REG_BANK.v was successful.
+# Compile of DMAC_MASTER.v was successful.
+# Compile of DMAC_SLAVE.v was successful.
+# Compile of DMAC_top.v was successful.
+# Compile of dmac_tb.v was successful.
+# Compile of amba_h.v was successful.
+# 6 compiles, 0 failed with no errors.
+# Compile of REG_BANK.v was successful.
+# Compile of DMAC_MASTER.v was successful.
+# Compile of DMAC_SLAVE.v was successful.
+# Compile of DMAC_top.v was successful.
+# Compile of dmac_tb.v was successful.
+# Compile of amba_h.v was successful.
+# 6 compiles, 0 failed with no errors.
+vsim work.DMAC_tb
+# Error loading design
+# Compile of REG_BANK.v was successful.
+# Compile of DMAC_MASTER.v was successful.
+# Compile of DMAC_SLAVE.v was successful.
+# Compile of DMAC_top.v failed with 1 errors.
+# Compile of dmac_tb.v was successful.
+# Compile of amba_h.v was successful.
+# 6 compiles, 1 failed with 1 error.
+# Compile of REG_BANK.v was successful.
+# Compile of DMAC_MASTER.v was successful.
+# Compile of DMAC_SLAVE.v was successful.
+# Compile of DMAC_top.v was successful.
+# Compile of dmac_tb.v was successful.
+# Compile of amba_h.v was successful.
+# 6 compiles, 0 failed with no errors.
+# Compile of REG_BANK.v was successful.
+# Compile of DMAC_MASTER.v was successful.
+# Compile of DMAC_SLAVE.v was successful.
+# Compile of DMAC_top.v was successful.
+# Compile of dmac_tb.v was successful.
+# Compile of amba_h.v was successful.
+# 6 compiles, 0 failed with no errors.
+vsim work.DMAC_tb
+# Error loading design
+# Compile of REG_BANK.v was successful.
+# Compile of DMAC_MASTER.v was successful.
+# Compile of DMAC_SLAVE.v was successful.
+# Compile of DMAC_top.v was successful.
+# Compile of dmac_tb.v was successful.
+# Compile of amba_h.v was successful.
+# 6 compiles, 0 failed with no errors.
+vsim work.DMAC_tb
+# Error loading design
