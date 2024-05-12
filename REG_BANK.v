@@ -15,7 +15,6 @@ module REG_BANK (
     TransferSize_dec_flag,
     src_burst_zero_flag,
     dest_burst_zero_flag,
-    set_DMACINTR_status,
     src_addr_inc,
     dest_addr_inc,
     m_HGRANT,
@@ -30,6 +29,7 @@ module REG_BANK (
     TS,
     BS,
     CHANNEL_enable,
+	clr_DMACINTR_pend, // 인터럽트 fsm에서 출력으로 나옴.
     DMACINTR_mask,
     DMACINTR_pend,
     sync_grant,
@@ -59,11 +59,13 @@ input load_DMAC_C0_Addr;
 input TransferSize_dec_flag;
 input src_burst_zero_flag;
 input dest_burst_zero_flag;
-input set_DMACINTR_status;
 input src_addr_inc;
 input dest_addr_inc;
 input m_HGRANT;
 input load_fir_src_img;
+
+input clr_DMACINTR_pend;
+//input set_DMACINTR_status; // 인터럽트 출력으로 나옴.
 
 output reg [11:0] DMAC_HADDR_REG;
 
@@ -151,6 +153,24 @@ begin
 	end
 end
 
+
+//DMACINTR_pend sequencial logic
+always @(posedge r_HCLK or negedge r_HRESETn)
+begin
+	if(!r_HRESETn) begin
+		DMACINTR_pend <= 1'b0;
+	end
+	else begin
+		if((clr_DMACINTR_pend==1'b1)&&!((write_out_reg==1'b1)&&(DMAC_HADDR_REG==12'h110))) begin
+			DMACINTR_pend <= 1'b0;
+		end 
+		else begin
+			DMACINTR_pend <= DMACINTR_pend;
+		end
+	end
+end
+
+
 always @(*)
 begin
 	TS <= DMAC_C0_Control[11:0];
@@ -172,7 +192,7 @@ begin
 	end
 end
 
-always @(posedge r_HCLK or negedge r_HRESETn)
+/*always @(posedge r_HCLK or negedge r_HRESETn)
 begin
    if(!r_HRESETn) begin
       DMACINTR_pend <= 1'b1;
@@ -185,7 +205,9 @@ begin
          CHANNEL_enable <= CHANNEL_enable;
       end
    end
-end
+end*/
+// 위 로직이 어디서 나왔는지 확인이 안됨.
+
 
 //sequencial logic(sync_grant)
 always @(posedge r_HCLK or negedge r_HRESETn)

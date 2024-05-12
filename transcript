@@ -74,3 +74,5 @@ vsim work.DMAC_tb
 # 6 compiles, 0 failed with no errors.
 vsim work.DMAC_tb
 # Error loading design
+# Project file C:/SOC_project/AHB/DMAC_module_seperate.mpf is write protected, data cannot be saved.
+# Unable to save project.

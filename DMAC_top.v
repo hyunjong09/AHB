@@ -32,7 +32,8 @@ module DMAC_top (
     m_HPROT,
     m_HLOCK, 
     m_HBUSREQ, 
-    DMACINTR
+    DMACINTR,
+	DMACINTR_status
 );
 
 //slave input
@@ -68,6 +69,7 @@ output reg [3:0] m_HPROT;
 output reg m_HLOCK; 
 output reg m_HBUSREQ; 
 output reg DMACINTR;
+output reg DMACINTR_status;
 
 //wire 선언
 wire [31:0] out_HRDATA;
@@ -88,6 +90,8 @@ wire [3:0] m_HPROT_wire;
 wire m_HLOCK_wire; 
 wire m_HBUSREQ_wire; 
 wire DMACINTR_wire;
+wire DMACINTR_status_wire;
+wire DMACINTR_pend_wire;
 
 wire [31:0] DMAC_Configuration;
 wire [31:0] DMAC_C0_SrcAddr;
@@ -181,7 +185,7 @@ REG_BANK bank_uut (	.r_HCLK(HCLK),
 					.BS(BS),
 					.CHANNEL_enable(CHANNEL_enable),
 					.DMACINTR_mask(DMACINTR_mask),
-					.DMACINTR_pend(DMACINTR_pend),
+					.DMACINTR_pend(DMACINTR_pend_wire),
 					.sync_grant(sync_grant),
 					.dmac_buffer_idx(dmac_buffer_idx),
 					.DMAC_C0_SrcAddr_Master(DMAC_C0_SrcAddr_Master),
@@ -198,7 +202,7 @@ DMAC_MASTER master_uut (	.m_HCLK(HCLK),
 							.BS(BS),
 							.CHANNEL_enable(CHANNEL_enable),
 							.DMACINTR_mask(DMACINTR_mask),
-							.DMACINTR_pend(DMACINTR_pend),
+							.DMACINTR_pend(DMACINTR_pend_wire),
 							.sync_grant(sync_grant),
 							.dmac_buffer_idx(dmac_buffer_idx),
 							.DMAC_C0_SrcAddr_Master(DMAC_C0_SrcAddr_Master),
@@ -226,7 +230,8 @@ DMAC_MASTER master_uut (	.m_HCLK(HCLK),
 							.m_HPROT(m_HPROT_wire),
 							.m_HLOCK(m_HLOCK_wire),
 							.m_HBUSREQ(m_HBUSREQ_wire), 
-							.DMACINTR(DMACINTR_wire)
+							.DMACINTR(DMACINTR_wire),
+							.DMACINTR_status(DMACINTR_status_wire)
 );
 
 always @(*)
