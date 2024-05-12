@@ -1,5 +1,5 @@
 `include "ahb_macro_h.v"
-module DMAC(
+module DMAC_moore(
 
                   HCLK, HRESETn, HREADY,
                   //Inputs of DMAC Slave Interface
