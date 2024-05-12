@@ -10,7 +10,6 @@ module DMAC_MASTER (
     CHANNEL_enable,
     DMACINTR_mask,
     DMACINTR_pend,
-	DMACINTR_status,
     sync_grant,
     dmac_buffer_idx,
     DMAC_C0_SrcAddr_Master,
@@ -40,8 +39,7 @@ module DMAC_MASTER (
     m_HBUSREQ,
 	
     DMACINTR,
-	clr_DMACINTR_status,
-	set_DMACINTR_status
+	clr_DMACINTR_pend
 );
 
 // 입력 포트
@@ -69,11 +67,10 @@ output reg load_DMAC_C0_Addr;
 output reg TransferSize_dec_flag;
 output reg src_burst_zero_flag;
 output reg dest_burst_zero_flag;
-output reg set_DMACINTR_status;
 output reg src_addr_inc;
 output reg dest_addr_inc;
 output reg load_fir_src_img;
-output reg clr_DMACINTR_status;
+
 
 output reg [1:0] m_HTRANS;
 output reg [2:0] m_HBURST; 
@@ -85,15 +82,15 @@ output reg [3:0] m_HPROT;
 output reg m_HLOCK; 
 output reg m_HBUSREQ; 
 output reg DMACINTR;
-output reg DMACINTR_status;
+output reg clr_DMACINTR_pend;
 
+reg DMACINTR_status;
+reg set_DMACINTR_status;
+reg clr_DMACINTR_status;
 reg [2:0] mns, mps;
 integer ahb_burst_size;
 reg [2:0] ahb_burst;
 reg [31:0] DMAC_buffer[15:0]  ;
-
-reg clr_DMACINTR_pend;
-
 //master state parameter 설정
 parameter MA_IDLE_S =0;
 parameter MA_REQ_S = 1;
@@ -104,7 +101,7 @@ parameter MA_WDATA_S = 5;
 
 
 //DMACINTR block1
-always @(posedge m_HCLK or negedge m_HRESETn) 
+always @(*) 
 begin
 	if(DMACINTR_pend==1'b1) begin
 		clr_DMACINTR_status <=1'b1;
@@ -117,7 +114,7 @@ begin
 end
 
 //DMACINTR block2
-always @(posedge m_HCLK or negedge m_HRESETn) 
+always @(*) 
 begin
 	if((DMACINTR_status==1'b1 && DMACINTR_mask==1'b1)) begin
 		DMACINTR <=1'b1;
@@ -133,7 +130,7 @@ begin
 	if(clr_DMACINTR_status==1'b1) begin
 		DMACINTR_status <=1'b0;
 	end
-	else if((set_DMACINTR_status==1'b1 && clr_DMACINTR_status!=1'b1)) begin
+	else if((set_DMACINTR_status==1'b1) && (clr_DMACINTR_status!=1'b1)) begin
 		DMACINTR_status <=1'b1;
 	end else begin
 		DMACINTR_status <= 1'b0;

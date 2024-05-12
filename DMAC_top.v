@@ -32,8 +32,7 @@ module DMAC_top (
     m_HPROT,
     m_HLOCK, 
     m_HBUSREQ, 
-    DMACINTR,
-	DMACINTR_status
+    DMACINTR
 );
 
 //slave input
@@ -69,7 +68,6 @@ output reg [3:0] m_HPROT;
 output reg m_HLOCK; 
 output reg m_HBUSREQ; 
 output reg DMACINTR;
-output reg DMACINTR_status;
 
 //wire 선언
 wire [31:0] out_HRDATA;
@@ -90,7 +88,6 @@ wire [3:0] m_HPROT_wire;
 wire m_HLOCK_wire; 
 wire m_HBUSREQ_wire; 
 wire DMACINTR_wire;
-wire DMACINTR_status_wire;
 wire DMACINTR_pend_wire;
 
 wire [31:0] DMAC_Configuration;
@@ -100,7 +97,7 @@ wire [31:0] DMAC_C0_Control;
 wire [31:0] DMAC_C0_Configuration;
 
 wire [11:0] DMAC_HADDR_REG;
-
+wire clr_DMACINTR_pend;
 wire CHANNEL_dis_flag;
 wire buffer_zero_flag;
 wire buffer_idx_inc;
@@ -108,7 +105,6 @@ wire load_DMAC_C0_Addr;
 wire TransferSize_dec_flag;
 wire src_burst_zero_flag;
 wire dest_burst_zero_flag;
-wire set_DMACINTR_status;
 wire src_addr_inc;
 wire dest_addr_inc;
 wire load_fir_src_img;
@@ -167,12 +163,11 @@ REG_BANK bank_uut (	.r_HCLK(HCLK),
 					.TransferSize_dec_flag(TransferSize_dec_flag),
 					.src_burst_zero_flag(src_burst_zero_flag),
 					.dest_burst_zero_flag(dest_burst_zero_flag),
-					.set_DMACINTR_status(set_DMACINTR_status),
 					.src_addr_inc(src_addr_inc),
 					.dest_addr_inc(dest_addr_inc),
 					.load_fir_src_img(load_fir_src_img),
 					.m_HGRANT(HGRANT),
-
+					.clr_DMACINTR_pend(clr_DMACINTR_pend),
 					.DMAC_HADDR_REG(DMAC_HADDR_REG),
 
 					.DMAC_Configuration(DMAC_Configuration),
@@ -217,7 +212,6 @@ DMAC_MASTER master_uut (	.m_HCLK(HCLK),
 							.TransferSize_dec_flag(TransferSize_dec_flag),
 							.src_burst_zero_flag(src_burst_zero_flag),
 							.dest_burst_zero_flag(dest_burst_zero_flag),
-							.set_DMACINTR_status(set_DMACINTR_status),
 							.src_addr_inc(src_addr_inc),
 							.dest_addr_inc(dest_addr_inc),
 							.load_fir_src_img(load_fir_src_img),
@@ -231,7 +225,7 @@ DMAC_MASTER master_uut (	.m_HCLK(HCLK),
 							.m_HLOCK(m_HLOCK_wire),
 							.m_HBUSREQ(m_HBUSREQ_wire), 
 							.DMACINTR(DMACINTR_wire),
-							.DMACINTR_status(DMACINTR_status_wire)
+							.clr_DMACINTR_pend(clr_DMACINTR_pend)
 );
 
 always @(*)
