@@ -94,10 +94,10 @@ end
 initial
 begin
    #80 m0_HWDATA <= 32'h00000001;
-   #40 m0_HWDATA <= 32'h00001010;
+   #40 m0_HWDATA <= 32'h00003078;
    #40 m0_HWDATA <= 32'h3C001000;
    #40 m0_HWDATA <= 32'h38002000;
-   #40 m0_HWDATA <= 32'h00000001;
+   #40 m0_HWDATA <= 32'h00000003;
 end
 
 

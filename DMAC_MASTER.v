@@ -25,7 +25,6 @@ module DMAC_MASTER (
     TransferSize_dec_flag,
     src_burst_zero_flag,
     dest_burst_zero_flag,
-    set_DMACINTR_status,
     src_addr_inc,  
     dest_addr_inc,
 	load_fir_src_img,
@@ -38,7 +37,9 @@ module DMAC_MASTER (
     m_HPROT,
     m_HLOCK,
     m_HBUSREQ,
-    DMACINTR
+	
+    DMACINTR,
+	clr_DMACINTR_pend
 );
 
 // 입력 포트
@@ -66,10 +67,10 @@ output reg load_DMAC_C0_Addr;
 output reg TransferSize_dec_flag;
 output reg src_burst_zero_flag;
 output reg dest_burst_zero_flag;
-output reg set_DMACINTR_status;
 output reg src_addr_inc;
 output reg dest_addr_inc;
 output reg load_fir_src_img;
+
 
 output reg [1:0] m_HTRANS;
 output reg [2:0] m_HBURST; 
@@ -81,12 +82,15 @@ output reg [3:0] m_HPROT;
 output reg m_HLOCK; 
 output reg m_HBUSREQ; 
 output reg DMACINTR;
+output reg clr_DMACINTR_pend;
 
+reg DMACINTR_status;
+reg set_DMACINTR_status;
+reg clr_DMACINTR_status;
 reg [2:0] mns, mps;
 integer ahb_burst_size;
 reg [2:0] ahb_burst;
-reg [15:0] [31:0]DMAC_buffer ;
-
+reg [31:0] DMAC_buffer[15:0]  ;
 //master state parameter 설정
 parameter MA_IDLE_S =0;
 parameter MA_REQ_S = 1;
@@ -94,6 +98,46 @@ parameter MA_READ_S = 2;
 parameter MA_RDATA_S = 3;
 parameter MA_WRITE_S = 4;
 parameter MA_WDATA_S = 5;
+
+
+//DMACINTR block1
+always @(*) 
+begin
+	if(DMACINTR_pend==1'b1) begin
+		clr_DMACINTR_status <=1'b1;
+		clr_DMACINTR_pend <= 1'b1;
+	end
+	else begin
+		clr_DMACINTR_pend <=1'b0;
+		clr_DMACINTR_status <=1'b0;
+	end
+end
+
+//DMACINTR block2
+always @(*) 
+begin
+	if((DMACINTR_status==1'b1 && DMACINTR_mask==1'b1)) begin
+		DMACINTR <=1'b1;
+	end
+	else begin
+		DMACINTR <=1'b0;
+	end
+end
+
+//DMACINTR block3
+always @(posedge m_HCLK or negedge m_HRESETn) 
+begin
+	if(clr_DMACINTR_status==1'b1) begin
+		DMACINTR_status <=1'b0;
+	end
+	else if((set_DMACINTR_status==1'b1) && (clr_DMACINTR_status!=1'b1)) begin
+		DMACINTR_status <=1'b1;
+	end else begin
+		DMACINTR_status <= 1'b0;
+	end
+end
+
+
 
 //sequencial logic(dmac_buffer_idx
 always @(posedge m_HCLK)
@@ -122,6 +166,8 @@ begin
 	if(!m_HRESETn)  mps <= MA_IDLE_S; 
 	else  mps <= mns; 
 end
+
+
 
 //FSM next state
 always @(*) 
@@ -521,5 +567,7 @@ begin
       end
    endcase
 end
+
+
 
 endmodule

@@ -33,7 +33,7 @@ wire m_HBUSREQ;
 wire DMACINTR;
 
 // Instantiate the DMAC module
-DMAC uut (
+DMAC_top uut (
     .HCLK(HCLK), 
     .HRESETn(HRESETn), 
     .HTRANS(HTRANS), 
